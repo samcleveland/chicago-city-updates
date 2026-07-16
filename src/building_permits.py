@@ -20,8 +20,6 @@ class BuildingPermits():
         
         self.domain = "data.cityofchicago.org"
         self.app_token = os.getenv("DP_TOKEN")
-        self.username = os.getenv("DP_USERNAME")
-        self.password = os.getenv("DP_PASSWORD")
         
         self.client = Socrata(
             self.domain,
@@ -32,7 +30,7 @@ class BuildingPermits():
     def load_building_permits(self):
         results = self.client.get(
             "ydr8-5enu",
-            where="issue_date >= '2026-01-01T00:00:00'",
+            where="issue_date >= '2026-07-01T00:00:00'",
             limit=20000
         )
     
@@ -110,9 +108,13 @@ class BuildingPermits():
     
         return R * c
 
+if __name__ == "__main__":
+    BP = BuildingPermits()
 
-BP = BuildingPermits()
+    results = BP.load_building_permits()
+    close_results = BP.filter_table_for_near(results, -87.6486287, 41.9314542).sort_values('distance', ascending=True)
 
-results = BP.load_building_permits()
-close_results = BP.filter_table_for_near(results, -87.6486287, 41.9314542).sort_values('issue_date', ascending=False)
-close_results
+    print(close_results.to_json(orient='records', indent=4))
+
+
+
