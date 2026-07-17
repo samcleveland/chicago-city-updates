@@ -18,12 +18,12 @@ jobs:
 
     # Get your code
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
 
     # Install Python
     - name: Setup Python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v6
       with:
         python-version: "3.12"
 
@@ -38,7 +38,6 @@ jobs:
     # Run download script
     - name: Download city data
       env:
-        DATABASE_URL: ${{ secrets.DATABASE_URL }}
         DP_TOKEN: ${{ secrets.DP_TOKEN }}
       run: |
         python src/download_businesses.py
