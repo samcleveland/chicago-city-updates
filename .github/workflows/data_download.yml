@@ -39,4 +39,4 @@ jobs:
       env:
         DP_TOKEN: ${{ secrets.DP_TOKEN }}
       run: |
-        python src/download_businesses.py
+        python src/active_businesses.py
