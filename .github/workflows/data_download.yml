@@ -39,7 +39,19 @@ jobs:
       env:
         DP_TOKEN: ${{ secrets.DP_TOKEN }}
       run: |
-        python src/active_businesses.py
+        tries=3
+        for i in $(seq 1 $tries); do
+          python src/active_businesses.py && break
+          rc=$?
+          echo "Attempt $i/$tries failed (rc=$rc)."
+          if [ $i -lt $tries ]; then
+            sleep $((i * 30))
+            echo "Retrying..."
+          else
+            echo "All attempts failed."
+            exit $rc
+          fi
+        done
 
     # Update data in repo
     - name: Create Pull Request
