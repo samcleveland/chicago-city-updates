@@ -61,6 +61,7 @@ jobs:
         commit-message: "Update city data"
         title: "Automated city data update"
         branch: automated-city-data-update
+        delete-branch: true
 
     - name: Enable Auto Merge
       if: ${{ steps.cpr.outputs.pull-request-number }}
