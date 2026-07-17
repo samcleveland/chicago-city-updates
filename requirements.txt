@@ -4,7 +4,10 @@ greenlet==3.5.3
 idna==3.18
 numpy==2.5.1
 pandas==3.0.3
+psycopg==3.3.4
+psycopg-binary==3.3.4
 psycopg2==2.9.12
+pyarrow==25.0.0
 python-dateutil==2.9.0.post0
 python-dotenv==1.2.2
 requests==2.34.2
