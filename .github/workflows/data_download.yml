@@ -1,0 +1,42 @@
+name: Download City Data
+
+on:
+  schedule:
+    # Runs every day at 1 PM UTC
+    - cron: "0 13 * * *"
+
+  # Allows you to manually run it from GitHub
+  workflow_dispatch:
+
+
+jobs:
+  download-data:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+    # Get your code
+    - name: Checkout repository
+      uses: actions/checkout@v6
+
+    # Install Python
+    - name: Setup Python
+      uses: actions/setup-python@v6
+      with:
+        python-version: "3.12"
+
+
+    # Install packages
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+
+    # Run download script
+    - name: Download city data
+      env:
+        DP_TOKEN: ${{ secrets.DP_TOKEN }}
+      run: |
+        python src/active_businesses.py
