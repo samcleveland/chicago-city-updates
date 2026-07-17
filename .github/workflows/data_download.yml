@@ -40,3 +40,19 @@ jobs:
         DP_TOKEN: ${{ secrets.DP_TOKEN }}
       run: |
         python src/active_businesses.py
+
+    # Update data in repo
+    - name: Create Pull Request
+      id: cpr
+      uses: peter-evans/create-pull-request@v7
+      with:
+        commit-message: "Update city data"
+        title: "Automated city data update"
+        branch: automated-city-data-update
+
+    - name: Enable Auto Merge
+      if: ${{ steps.cpr.outputs.pull-request-number }}
+      uses: peter-evans/enable-pull-request-automerge@v3
+      with:
+        pull-request-number: ${{ steps.cpr.outputs.pull-request-number }}
+        merge-method: squash
