@@ -64,9 +64,13 @@ jobs:
         delete-branch: true
 
     - name: Enable Auto Merge
-      if: ${{ steps.cpr.outputs.pull-request-number }}
+      if: ${{ steps.cpr.outputs.pull-request-number != '' }}
       uses: peter-evans/enable-pull-request-automerge@v3
       with:
         pull-request-number: ${{ steps.cpr.outputs.pull-request-number }}
         merge-method: squash
-        delete-branch: true
+
+    - name: Clean up branch if no PR created
+      if: ${{ steps.cpr.outputs.pull-request-number == '' }}
+      run: |
+        git push origin --delete automated-city-data-update || true
