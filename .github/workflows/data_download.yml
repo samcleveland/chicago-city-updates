@@ -8,6 +8,9 @@ on:
   # Allows you to manually run it from GitHub
   workflow_dispatch:
 
+permissions:
+  contents: write
+  pull-requests: write
 
 jobs:
   download-data:
@@ -63,12 +66,14 @@ jobs:
         branch: automated-city-data-update
         delete-branch: true
 
-    - name: Enable Auto Merge
+    - name: Merge Pull Request
       if: ${{ steps.cpr.outputs.pull-request-number != '' }}
-      uses: peter-evans/enable-pull-request-automerge@v3
-      with:
-        pull-request-number: ${{ steps.cpr.outputs.pull-request-number }}
-        merge-method: squash
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        gh pr merge ${{ steps.cpr.outputs.pull-request-number }} \
+          --squash \
+          --delete-branch
 
     - name: Clean up branch if no PR created
       if: ${{ steps.cpr.outputs.pull-request-number == '' }}
