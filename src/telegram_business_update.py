@@ -28,7 +28,7 @@ class ActiveBusinessesLoader:
                 f"Parquet file not found: {self.parquet_path}"
             )
 
-        cutoff = pd.Timestamp(date.today() - timedelta(days=2))
+        cutoff = pd.Timestamp(date.today() - timedelta(days=1))
 
         active_businesses = pd.read_parquet(self.parquet_path)
 
