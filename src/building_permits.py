@@ -10,6 +10,7 @@ import numpy as np
 from sodapy import Socrata
 from dotenv import load_dotenv
 
+from datetime import date, timedelta
 
 from math import radians, sin, cos, sqrt, atan2
 
@@ -28,9 +29,13 @@ class BuildingPermits():
         
 
     def load_building_permits(self):
+        yesterday = date.today() - timedelta(days=7)
+
+        yesterday_string = f"'{yesterday.year}-{yesterday.month}-{yesterday.day}T00:00:00'"
+
         results = self.client.get(
             "ydr8-5enu",
-            where="issue_date >= '2026-07-01T00:00:00'",
+            where=f"application_start_date >= {yesterday_string}",
             limit=20000
         )
     
@@ -82,31 +87,6 @@ class BuildingPermits():
         
         return df[df["distance"] <= distance]
                 
-
-
-    def haversine_distance(lat1, lon1, lat2, lon2):
-        """
-        Calculate distance between two latitude/longitude points.
-        Returns distance in miles.
-        """
-        R = 3958.8  # Earth's radius in miles (use 6371 for kilometers)
-    
-        lat1, lon1, lat2, lon2 = map(
-            radians,
-            [lat1, lon1, lat2, lon2]
-        )
-    
-        dlat = lat2 - lat1
-        dlon = lon2 - lon1
-    
-        a = (
-            sin(dlat / 2) ** 2
-            + cos(lat1) * cos(lat2) * sin(dlon / 2) ** 2
-        )
-    
-        c = 2 * atan2(sqrt(a), sqrt(1 - a))
-    
-        return R * c
 
 if __name__ == "__main__":
     BP = BuildingPermits()

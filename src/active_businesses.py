@@ -150,6 +150,7 @@ class ActiveBusinesses:
                 license_description,
                 application_type,
                 expiration_date,
+                date_issued,
                 latitude,
                 longitude
             LIMIT 500000
