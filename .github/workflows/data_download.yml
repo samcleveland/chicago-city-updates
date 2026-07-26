@@ -56,6 +56,13 @@ jobs:
           fi
         done
 
+    - name: Send Telegram business updates
+      env:
+        TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+        LOCATIONS: ${{ secrets.LOCATIONS }}
+      run: |
+        python src/telegram_business_update.py
+
     # Update data in repo
     - name: Create Pull Request
       id: cpr
