@@ -114,6 +114,8 @@ class BusinessUpdateProcessor:
     def run(self, user_lat, user_lon, distance) -> None:
         df = self.loader.load()
 
+        print(f"{len(df)} Records Loaded")
+
         df = self.loader.filter_table_for_near(df, local_lat=user_lat, local_lon=user_lon, distance=distance)
 
         for index, row in df.iterrows():
@@ -127,7 +129,7 @@ class BusinessUpdateProcessor:
 
             self.telegram.send_message(message)
 
-        print("Telegram message sent successfully.")
+            print(f"{len(df)} telegram message sent successfully.")
 
 
 def main() -> None:
