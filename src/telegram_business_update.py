@@ -22,7 +22,7 @@ class ActiveBusinessesLoader:
     def __init__(self, parquet_path: str = "data/active_businesses.parquet"):
         self.parquet_path = Path(parquet_path)
 
-    def load(self) -> pd.DataFrame:
+    def load_new_business_licenses(self) -> pd.DataFrame:
         if not self.parquet_path.exists():
             raise FileNotFoundError(
                 f"Parquet file not found: {self.parquet_path}"
@@ -39,6 +39,23 @@ class ActiveBusinessesLoader:
 
         return active_businesses[(active_businesses["application_type"] == 'ISSUE') &
                                               (active_businesses['date_issued'] >= cutoff)]
+
+    def load_existing_business_licenses(self) -> pd.DataFrame:
+        if not self.parquet_path.exists():
+            raise FileNotFoundError(
+                f"Parquet file not found: {self.parquet_path}"
+            )
+
+        cutoff = pd.Timestamp(date.today() - timedelta(days=1))
+
+        active_businesses = pd.read_parquet(self.parquet_path)
+
+        active_businesses["date_issued"] = pd.to_datetime(
+                                            active_businesses["date_issued"],
+                                            errors="coerce"
+)
+
+        return active_businesses[active_businesses['date_issued'] < cutoff].sort_values('date_issued', ascending=False)
 
     def filter_table_for_near(self, df, local_lon, local_lat, distance=1):
         
@@ -63,6 +80,25 @@ class ActiveBusinessesLoader:
         df["distance"] = 2 * R * np.arcsin(np.sqrt(a))
         
         return df[df["distance"] <= distance].sort_values('distance')
+
+    def build_existing_business_lookup(
+        self,
+        existing_business_df: pd.DataFrame
+    ) -> set[tuple[str, str]]:
+    
+        return set(
+            zip(
+                existing_business_df["address"]
+                .fillna("")
+                .str.strip()
+                .str.upper(),
+
+                existing_business_df["business_name"]
+                .fillna("")
+                .str.strip()
+                .str.upper()
+            )
+        )
 
 
 class TelegramNotifier:
@@ -112,24 +148,41 @@ class BusinessUpdateProcessor:
         )
 
     def run(self, user_lat, user_lon, distance) -> None:
-        df = self.loader.load()
+        df_new_business_licenses = self.loader.load_new_business_licenses()
+        df_existing_business_licenses = self.loader.load_existing_business_licenses()
 
-        print(f"{len(df)} Records Loaded")
+        existing_business_lookup = (
+                                    self.loader.build_existing_business_lookup(
+                                        df_existing_business_licenses
+                                    )
+                                )
 
-        df = self.loader.filter_table_for_near(df, local_lat=user_lat, local_lon=user_lon, distance=distance)
+        print(f"{len(df_new_business_licenses)} Records Loaded")
 
-        for index, row in df.iterrows():
+        df_new_business_licenses = self.loader.filter_table_for_near(df_new_business_licenses, local_lat=user_lat, local_lon=user_lon, distance=distance)
+
+        for index, row in df_new_business_licenses.iterrows():
+
+            business_key = (
+                str(row.address).strip().upper(),
+                str(row.business_name).strip().upper()
+            )
+
+            has_operated_here_before = (
+                business_key in existing_business_lookup
+            )
 
             message = (
                 f"Business Name: {row.business_name}\n"
                 f"Address: {row.address}\n"
                 f"License Type: {row.license_type }\n"
-                f"Distance: {row.distance}"
+                f"Distance: {row.distance:.2f} miles\n"
+                f"Previously Operated Here: {'Yes' if has_operated_here_before else 'No'}"
             )
 
             self.telegram.send_message(message)
 
-        print(f"{len(df)} telegram message sent successfully.")
+        print(f"{len(df_new_business_licenses)} telegram message sent successfully.")
 
 
 def main() -> None:
