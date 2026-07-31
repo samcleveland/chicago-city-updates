@@ -129,7 +129,7 @@ class BusinessUpdateProcessor:
 
             self.telegram.send_message(message)
 
-            print(f"{len(df)} telegram message sent successfully.")
+        print(f"{len(df)} telegram message sent successfully.")
 
 
 def main() -> None:
